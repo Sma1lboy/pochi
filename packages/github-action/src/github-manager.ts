@@ -1,10 +1,10 @@
+import type * as github from "@actions/github";
+import { Octokit } from "@octokit/rest";
+import type { IssueCommentEvent } from "@octokit/webhooks-types";
 /**
  * GitHub operations manager
  */
 import { readGithubToken } from "./environment";
-import type * as github from "@actions/github";
-import { Octokit } from "@octokit/rest";
-import type { IssueCommentEvent } from "@octokit/webhooks-types";
 
 interface GitHubRepository {
   owner: string;
