@@ -11,7 +11,75 @@ Install Pochi GitHub Action to your repository instantly:
 curl -sSL https://raw.githubusercontent.com/tabbyml/pochi/main/packages/github-action/scripts/install | bash
 ```
 
+# Pochi GitHub Action
+
+AI-powered GitHub Action that responds to PR comments with intelligent code analysis and suggestions.
+
+## 🚀 One-Line Installation
+
+Install Pochi GitHub Act# Pochi GitHub Action
+
+AI-powered GitHub Action that responds to PR comments with intelligent code analysis and suggestions.
+
+## 🚀 One-Line Installation
+
+Install Pochi GitHub Act# Pochi GitHub Action
+
+AI-powered GitHub Action that responds to PR comments with intelligent code analysis and suggestions.
+
+## 🚀 One-Line Installation
+
+Install Pochi GitHub Act# Pochi GitHub Action
+
+AI-powered GitHub Action that responds to PR comments with intelligent code analysis and suggestions.
+
+## 🚀 One-Line Installation
+
+Install Pochi GitHub Act# Pochi GitHub Action
+
+AI-powered GitHub Action that responds to PR comments with intelligent code analysis and suggestions.
+
+## 🚀 One-Line Installation
+
+Install Pochi GitHub Act# Pochi GitHub Action
+
+AI-powered GitHub Action that responds to PR comments with intelligent code analysis and suggestions.
+
+## 🚀 One-Line Installation
+
+Install Pochi GitHub Act# Pochi GitHub Action
+
+AI-powered GitHub Action that responds to PR comments with intelligent code analysis and suggestions.
+
+## 🚀 One-Line Installation
+
+Install Pochi GitHub Act# Pochi GitHub Action
+
+AI-powered GitHub Action that responds to PR comments with intelligent code analysis and suggestions.
+
+## 🚀 One-Line Installation
+
+Install Pochi GitHub Act# Pochi GitHub Action
+
+AI-powered GitHub Action that responds to PR comments with intelligent code analysis and suggestions.
+
+## 🚀 One-Line Installation
+
+Install Pochi GitHub Act# Pochi GitHub Action
+
+AI-powered GitHub Action that responds to PR comments with intelligent code analysis and suggestions.
+
+## 🚀 One-Line Installation
+
+Install Pochi GitHub Act# Pochi GitHub Action
+
+AI-powered GitHub Action that responds to PR comments with intelligent code analysis and suggestions.
+
+## 🚀 One-Line Installation
+
+Install Pochi GitHub Act
 This command will:
+
 - Auto-detect your repository owner and name
 - Create `.github/workflows/pochi.yml` workflow file
 - Provide setup instructions for required secrets
