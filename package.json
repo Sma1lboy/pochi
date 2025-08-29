@@ -1,5 +1,5 @@
 {
-  "name": "@getpochi/monorepo",
+  "name": "@getpochi/monorepoadasdadsa",
   "private": true,
   "scripts": {
     "check": "npm-run-all check:default check:test check:ast-grep",
