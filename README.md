@@ -1,6 +1,46 @@
 # Pochi
 
-<p align="center">
+<<<<<<<<<<<p align="center">
+  <img src="https://github.com/TabbyML/pochi/blob/main/packages/vscode/assets/icons/logo128.png?raw=true" alt="Pochi Logo" width="128"/>
+</p>
+
+p align="center">
+  <img src="https://github.com/TabbyML/pochi/blob/main/packages/vscode/assets/icons/logo128.png?raw=true" alt="Pochi Logo" width="128"/>
+</p>
+
+p align="center">
+  <img src="https://github.com/TabbyML/pochi/blob/main/packages/vscode/assets/icons/logo128.png?raw=true" alt="Pochi Logo" width="128"/>
+</p>
+
+p align="center">
+  <img src="https://github.com/TabbyML/pochi/blob/main/packages/vscode/assets/icons/logo128.png?raw=true" alt="Pochi Logo" width="128"/>
+</p>
+
+p align="center">
+  <img src="https://github.com/TabbyML/pochi/blob/main/packages/vscode/assets/icons/logo128.png?raw=true" alt="Pochi Logo" width="128"/>
+</p>
+
+p align="center">
+  <img src="https://github.com/TabbyML/pochi/blob/main/packages/vscode/assets/icons/logo128.png?raw=true" alt="Pochi Logo" width="128"/>
+</p>
+
+p align="center">
+  <img src="https://github.com/TabbyML/pochi/blob/main/packages/vscode/assets/icons/logo128.png?raw=true" alt="Pochi Logo" width="128"/>
+</p>
+
+p align="center">
+  <img src="https://github.com/TabbyML/pochi/blob/main/packages/vscode/assets/icons/logo128.png?raw=true" alt="Pochi Logo" width="128"/>
+</p>
+
+p align="center">
+  <img src="https://github.com/TabbyML/pochi/blob/main/packages/vscode/assets/icons/logo128.png?raw=true" alt="Pochi Logo" width="128"/>
+</p>
+
+p align="center">
+  <img src="https://github.com/TabbyML/pochi/blob/main/packages/vscode/assets/icons/logo128.png?raw=true" alt="Pochi Logo" width="128"/>
+</p>
+
+p align="center">
   <img src="https://github.com/TabbyML/pochi/blob/main/packages/vscode/assets/icons/logo128.png?raw=true" alt="Pochi Logo" width="128"/>
 </p>
 
