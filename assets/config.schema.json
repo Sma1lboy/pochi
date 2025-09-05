@@ -6,14 +6,117 @@
       "default": "https://getpochi.com/config.schema.json",
       "type": "string"
     },
-    "credentials": {
+    "vendors": {
       "type": "object",
       "properties": {
-        "pochiToken": {
-          "type": "string"
+        "pochi": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "credentials": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "token"
+                  ],
+                  "additionalProperties": false
+                },
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "image": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "email"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "credentials"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "gemini-cli": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "credentials": {
+                  "type": "object",
+                  "properties": {
+                    "accessToken": {
+                      "type": "string"
+                    },
+                    "refreshToken": {
+                      "type": "string"
+                    },
+                    "expiresAt": {
+                      "type": "number"
+                    },
+                    "project": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "accessToken",
+                    "refreshToken",
+                    "expiresAt",
+                    "project"
+                  ],
+                  "additionalProperties": false
+                },
+                "user": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "email": {
+                      "type": "string"
+                    },
+                    "image": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "email"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "required": [
+                "credentials"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
-      "additionalProperties": false
+      "additionalProperties": {}
     },
     "providers": {
       "type": "object",
@@ -43,12 +146,10 @@
                     },
                     "maxTokens": {
                       "description": "Maximum number of generated tokens for the model",
-                      "default": 4096,
                       "type": "number"
                     },
                     "contextWindow": {
                       "description": "Context window size for the model",
-                      "default": 100000,
                       "type": "number"
                     },
                     "useToolCallMiddleware": {
@@ -56,7 +157,6 @@
                       "type": "boolean"
                     }
                   },
-                  "required": ["maxTokens", "contextWindow"],
                   "additionalProperties": false
                 }
               },
@@ -73,7 +173,10 @@
                 "type": "string"
               }
             },
-            "required": ["models", "baseURL"],
+            "required": [
+              "models",
+              "baseURL"
+            ],
             "additionalProperties": false
           },
           {
@@ -97,12 +200,10 @@
                     },
                     "maxTokens": {
                       "description": "Maximum number of generated tokens for the model",
-                      "default": 4096,
                       "type": "number"
                     },
                     "contextWindow": {
                       "description": "Context window size for the model",
-                      "default": 100000,
                       "type": "number"
                     },
                     "useToolCallMiddleware": {
@@ -110,7 +211,6 @@
                       "type": "boolean"
                     }
                   },
-                  "required": ["maxTokens", "contextWindow"],
                   "additionalProperties": false
                 }
               },
@@ -130,7 +230,10 @@
                         "type": "string"
                       }
                     },
-                    "required": ["serviceAccountKey", "location"],
+                    "required": [
+                      "serviceAccountKey",
+                      "location"
+                    ],
                     "additionalProperties": false
                   },
                   {
@@ -146,13 +249,21 @@
                         "type": "string"
                       }
                     },
-                    "required": ["accessToken", "projectId", "location"],
+                    "required": [
+                      "accessToken",
+                      "projectId",
+                      "location"
+                    ],
                     "additionalProperties": false
                   }
                 ]
               }
             },
-            "required": ["models", "kind", "vertex"],
+            "required": [
+              "models",
+              "kind",
+              "vertex"
+            ],
             "additionalProperties": false
           },
           {
@@ -176,12 +287,10 @@
                     },
                     "maxTokens": {
                       "description": "Maximum number of generated tokens for the model",
-                      "default": 4096,
                       "type": "number"
                     },
                     "contextWindow": {
                       "description": "Context window size for the model",
-                      "default": 100000,
                       "type": "number"
                     },
                     "useToolCallMiddleware": {
@@ -189,7 +298,6 @@
                       "type": "boolean"
                     }
                   },
-                  "required": ["maxTokens", "contextWindow"],
                   "additionalProperties": false
                 }
               },
@@ -202,7 +310,10 @@
                 "type": "string"
               }
             },
-            "required": ["models", "kind"],
+            "required": [
+              "models",
+              "kind"
+            ],
             "additionalProperties": false
           }
         ]
@@ -240,7 +351,9 @@
                 }
               }
             },
-            "required": ["url"],
+            "required": [
+              "url"
+            ],
             "additionalProperties": false
           },
           {
@@ -277,7 +390,10 @@
                 }
               }
             },
-            "required": ["command", "args"],
+            "required": [
+              "command",
+              "args"
+            ],
             "additionalProperties": false
           }
         ]

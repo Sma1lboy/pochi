@@ -4,8 +4,7 @@ import { z } from "zod";
 
 import "@/components/prompt-form/prompt-form.css";
 import { WelcomeScreen } from "@/components/welcome-screen";
-import { useCustomModelSetting } from "@/lib/hooks/use-custom-model-setting";
-import { Loader2 } from "lucide-react";
+import { useModelList } from "@/lib/hooks/use-model-list";
 
 const searchSchema = z.object({
   uid: z.string().optional(),
@@ -23,19 +22,10 @@ function RouteComponent() {
   const key = uidFromRoute !== undefined ? `task-${uidFromRoute}` : `new-${ts}`;
 
   const { auth } = Route.useRouteContext();
-  const { customModelSettings, isLoading: isLoadingCustomModelSettings } =
-    useCustomModelSetting();
   const uid = uidFromRoute || crypto.randomUUID();
+  const { modelList = [] } = useModelList(true);
 
-  if (isLoadingCustomModelSettings) {
-    return (
-      <div className="flex h-screen w-screen items-center justify-center">
-        <Loader2 className="animate-spin" />
-      </div>
-    );
-  }
-
-  if (!auth?.user && !customModelSettings?.length) {
+  if (!auth?.user && modelList.length === 0) {
     return <WelcomeScreen user={auth?.user} />;
   }
 

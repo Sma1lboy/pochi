@@ -516,8 +516,9 @@ describe("DiffView with real file system", () => {
       assert.ok(vscodeStubs.workspace.fs.stat.called, "fs.stat should be called for non-empty new file");
       assert.ok(vscodeStubs.workspace.fs.delete.notCalled, "fs.delete should NOT be called for non-empty new file");
     });
+  });
 
-    it("should close existing non-diff editor tabs when opening diff view", async () => {
+  it("should close existing non-diff editor tabs when opening diff view", async () => {
       const testFileRelPath = "close-tabs-test.txt";
       const testFileUri = vscode.Uri.joinPath(currentTestTempDirUri, testFileRelPath);
       await createFile(testFileUri, "original content");
@@ -565,5 +566,4 @@ describe("DiffView with real file system", () => {
       assert.strictEqual(closedTabs[0], mockTab, "Should close the non-diff tab");
       assert.ok(vscodeStubs.commands.executeCommand.calledWith("vscode.diff"), "Should execute diff command");
     });
-  });
 });

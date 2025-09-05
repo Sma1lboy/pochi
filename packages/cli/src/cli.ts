@@ -3,22 +3,26 @@
 import "@livestore/wa-sqlite/dist/wa-sqlite.node.wasm" with { type: "file" };
 
 import { Command } from "@commander-js/extra-typings";
-import { getLogger } from "@getpochi/common";
+import { constants, getLogger } from "@getpochi/common";
 import { pochiConfig } from "@getpochi/common/configuration";
 import type { PochiApi, PochiApiClient } from "@getpochi/common/pochi-api";
+import { vendors } from "@getpochi/common/vendor/node";
 import type { LLMRequestData } from "@getpochi/livekit";
 import chalk from "chalk";
 import * as commander from "commander";
 import { hc } from "hono/client";
 import packageJson from "../package.json";
+import { registerAuthCommand } from "./auth";
 import { findRipgrep } from "./lib/find-ripgrep";
 import {
   containsWorkflowReference,
   replaceWorkflowReferences,
 } from "./lib/workflow-loader";
 import { createStore } from "./livekit/store";
+import { registerModelCommand } from "./model";
 import { OutputRenderer } from "./output-renderer";
 import { TaskRunner } from "./task-runner";
+import { registerUpgradeCommand } from "./upgrade";
 import { waitUntil } from "./wait-until";
 
 const logger = getLogger("Pochi");
@@ -73,8 +77,7 @@ const program = new Command()
 
     const store = await createStore(process.cwd());
 
-    const llm = createLLMConfig({ options, apiClient, program });
-
+    const llm = await createLLMConfig(program, options);
     const rg = findRipgrep();
     if (!rg) {
       return program.error(
@@ -131,6 +134,10 @@ program
     outputError: (str, write) => write(chalk.red(str)),
   });
 
+registerAuthCommand(program);
+registerModelCommand(program);
+registerUpgradeCommand(program);
+
 program.parse(process.argv);
 
 type Program = typeof program;
@@ -173,9 +180,10 @@ async function parseTaskInput(options: ProgramOpts, program: Program) {
 }
 
 async function createApiClient(): Promise<PochiApiClient> {
-  const token = pochiConfig.value.credentials?.pochiToken;
+  const { credentials } = pochiConfig.value.vendors?.pochi || {};
+  const token = credentials?.token;
 
-  const authClient: PochiApiClient = hc<PochiApi>(prodServerUrl, {
+  const apiClient: PochiApiClient = hc<PochiApi>(prodServerUrl, {
     fetch(input: string | URL | Request, init?: RequestInit) {
       const headers = new Headers(init?.headers);
       if (token) {
@@ -189,32 +197,81 @@ async function createApiClient(): Promise<PochiApiClient> {
     },
   });
 
-  authClient.authenticated = !!token;
-  return authClient;
+  const proxed = new Proxy(apiClient, {
+    get(target, prop, receiver) {
+      if (prop === "authenticated") {
+        return !!token;
+      }
+      return Reflect.get(target, prop, receiver);
+    },
+  });
+
+  return proxed;
 }
 
-function createLLMConfig({
-  apiClient,
-  options,
-}: {
-  apiClient: PochiApiClient;
-  program: Program;
-  options: ProgramOpts;
-}): LLMRequestData {
+async function createLLMConfig(
+  program: Program,
+  options: ProgramOpts,
+): Promise<LLMRequestData> {
+  const llm =
+    (await createLLMConfigWithVendors(program, options)) ||
+    (await createLLMConfigWithProviders(program, options));
+  if (!llm) {
+    return program.error(`Model ${options.model} not found in configuration`);
+  }
+
+  return llm;
+}
+
+async function createLLMConfigWithVendors(
+  program: Program,
+  options: ProgramOpts,
+): Promise<LLMRequestData | undefined> {
   const sep = options.model.indexOf("/");
-  const modelProviderId = options.model.slice(0, sep);
+  const vendorId = options.model.slice(0, sep);
   const modelId = options.model.slice(sep + 1);
 
-  const modelProvider = pochiConfig.value.providers?.[modelProviderId];
-  const modelSetting = modelProvider?.models?.[modelId];
-
-  if (!modelProvider) {
+  if (vendorId in vendors) {
+    const vendor = vendors[vendorId as keyof typeof vendors];
+    const models =
+      await vendors[vendorId as keyof typeof vendors].fetchModels();
+    const options = models[modelId];
+    if (!options) {
+      return program.error(`Model ${modelId} not found`);
+    }
     return {
-      type: "pochi",
-      modelId: options.model,
-      apiClient,
+      type: "vendor",
+      vendorId: vendorId,
+      modelId: modelId,
+      options,
+      getCredentials: vendor.getCredentials,
     } satisfies LLMRequestData;
   }
+
+  const pochiModels = await vendors.pochi.fetchModels();
+  const pochiModelOptions = pochiModels[options.model];
+  if (pochiModelOptions) {
+    return {
+      type: "vendor",
+      vendorId: "pochi",
+      modelId: options.model,
+      options: pochiModelOptions,
+      getCredentials: vendors.pochi.getCredentials,
+    };
+  }
+}
+
+async function createLLMConfigWithProviders(
+  program: Program,
+  options: ProgramOpts,
+): Promise<LLMRequestData | undefined> {
+  const sep = options.model.indexOf("/");
+  const providerId = options.model.slice(0, sep);
+  const modelId = options.model.slice(sep + 1);
+
+  const modelProvider = pochiConfig.value.providers?.[providerId];
+  const modelSetting = modelProvider?.models?.[modelId];
+  if (!modelProvider) return;
 
   if (!modelSetting) {
     return program.error(`Model ${options.model} not found in configuration`);
@@ -226,8 +283,10 @@ function createLLMConfig({
       modelId,
       baseURL: modelProvider.baseURL,
       apiKey: modelProvider.apiKey,
-      contextWindow: modelSetting.contextWindow,
-      maxOutputTokens: modelSetting.maxTokens,
+      contextWindow:
+        modelSetting.contextWindow ?? constants.DefaultContextWindow,
+      maxOutputTokens:
+        modelSetting.maxTokens ?? constants.DefaultMaxOutputTokens,
     };
   }
 
@@ -236,8 +295,10 @@ function createLLMConfig({
       type: "ai-gateway",
       modelId,
       apiKey: modelProvider.apiKey,
-      contextWindow: modelSetting.contextWindow,
-      maxOutputTokens: modelSetting.maxTokens,
+      contextWindow:
+        modelSetting.contextWindow ?? constants.DefaultContextWindow,
+      maxOutputTokens:
+        modelSetting.maxTokens ?? constants.DefaultMaxOutputTokens,
     };
   }
 
@@ -246,14 +307,10 @@ function createLLMConfig({
       type: "google-vertex-tuning",
       modelId,
       vertex: modelProvider.vertex,
-      contextWindow: modelSetting.contextWindow,
-      maxOutputTokens: modelSetting.maxTokens,
+      contextWindow:
+        modelSetting.contextWindow ?? constants.DefaultContextWindow,
+      maxOutputTokens:
+        modelSetting.maxTokens ?? constants.DefaultMaxOutputTokens,
     };
   }
-
-  return {
-    type: "pochi",
-    modelId: options.model,
-    apiClient,
-  } satisfies LLMRequestData;
 }
