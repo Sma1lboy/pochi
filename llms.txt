@@ -194,6 +194,40 @@ Here you will find highlights on features, enhancements, and bug fixes, plus ins
 
 ***
 
+## Sep 5, 2025
+
+### TL;DR
+
+We had a massive week — **62 PRs shipped** 🎉!
+
+Pochi can now reply to you right in **GitHub comments & issues**, the interface speaks more languages with new **i18n support**, and we rolled out a sleeker, more powerful **background job system**. On top of that, the **CLI** got smarter, **autocomplete** got friendlier, and the **docs** got a glow-up!
+
+### Features 🚀
+
+* **GitHub Action integration:** Pochi now lives in your PR comments / issues! Ask for help in a PR with `/pochi`. [#76](https://github.com/TabbyML/pochi/pull/76)
+* **Internationalization (i18n):** The VS Code extension now supports 🇺🇸 🇨🇳 🇯🇵 🇰🇷. Want your language included? Open a PR! [#90](https://github.com/TabbyML/pochi/pull/90)
+
+### Enhancements ✨
+
+* **CLI upgrades:** The Pochi CLI got a big boost this week!
+  * Install via Homebrew 🍺 [#125](https://github.com/TabbyML/pochi/issues/125)
+  * Authenticate with `pochi auth`, including support for Gemini login [#167](https://github.com/TabbyML/pochi/pull/167)
+  * Trigger workflows directly with `pochi -p "/create-pr"` [#110](https://github.com/TabbyML/pochi/pull/110)
+* **Enhanced Background jobs:** Added terminal integration and lifecycle controls. Enhanced the job UI with collapsible detail logs and readable IDs for a clearer experience. [#81](https://github.com/TabbyML/pochi/pull/81), [#97](https://github.com/TabbyML/pochi/pull/97)
+* **Autocomplete:** Pochi suggests relevant tools, functions, and variables to help you type prompts faster. [#89](https://github.com/TabbyML/pochi/pull/89)
+* **Documentation updates:** Refreshed CLI usage docs, expanded model provider configuration examples, and added Slack integration documentation. [#133](https://github.com/TabbyML/pochi/pull/133), [#141](https://github.com/TabbyML/pochi/pull/141), [#82](https://github.com/TabbyML/pochi/pull/82)
+
+### Bug Fixes 🐛
+
+* **File writing reliability:** The CLI ensures directories exist before writing, so `writeToFile` tool won't fail. [#118](https://github.com/TabbyML/pochi/pull/118)
+* **Code completion fix:** Corrected how VS Code calculates the replacement range for suggestions, so completions insert correctly. [#131](https://github.com/TabbyML/pochi/pull/131)
+
+### New Contributors 🐾
+
+[@karim-coder](https://github.com/karim-coder) made their first contribution this week! Welcome aboard! 🎉
+
+***
+
 ## Aug 29, 2025
 
 ### TL;DR
@@ -222,7 +256,99 @@ icon: "Github"
 
 # GitHub
 
-TBD
+Use Pochi’s AI assistant directly in your GitHub repository by commenting on pull requests to perform code reviews, explain changes, and suggest improvements.
+
+<Callout type="info" title="How it works">
+  This integration runs inside a GitHub Actions runner. It temporarily installs
+  the pochi CLI and executes tasks in the context of your repository. Progress
+  is continuously updated under the triggering comment, and a final result
+  (✅/❌) is posted when finished.
+</Callout>
+
+## Setup
+
+Create a workflow file `.github/workflows/pochi.yml` in your repository:
+
+```yaml
+name: pochi
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  pochi:
+    if: contains(github.event.comment.body, '/pochi')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run pochi
+        uses: tabbyml/pochi/packages/github-action@main
+        env:
+          # Required: Pochi session token (get it from app.getpochi.com and add as a repository secret)
+          POCHI_TOKEN: ${{ secrets.POCHI_TOKEN }}
+          # Optional: custom model (defaults to CLI's default model if not set)
+          # See the Models page for model options and configuration
+          # POCHI_MODEL: google/gemini-2.5-pro
+```
+
+Notes:
+
+* Triggered by `issue_comment` (created) and runs only if the comment body contains `/pochi`
+* Requires write permissions to read changes, post comments, and add reactions to PRs
+* Provide `POCHI_TOKEN` via env; optionally set `POCHI_MODEL` to customize the model
+* By default, the action uses GitHub's built-in `GITHUB_TOKEN` (github-actions bot). You can customize this by setting a custom `GITHUB_TOKEN` environment variable with your own Personal Access Token (PAT)
+
+## Usage
+
+Comment on a PR with `/pochi` followed by your request, e.g. `/pochi review this code`, `/pochi explain the changes in this PR`, `/pochi suggest improvements`.
+
+![Comment example](../assets/images/github-comment.png)
+
+Once triggered:
+
+* Pochi reacts to your comment with 👀 to indicate it’s running
+* A progress comment is updated every 15 seconds
+* When finished, it posts the final result and reacts with 🚀 (success) or −1 (failure)
+
+![Progress example](../assets/images/github-progress.png)
+
+![Actions run example](../assets/images/github-action-run.png)
+
+Permission requirement: Only users with write/admin permission can trigger execution. Otherwise, an error will be posted as a comment.
+
+## Advanced configuration
+
+### Use a custom GitHub token (optional)
+
+By default, the action uses the GitHub-provided `GITHUB_TOKEN`. For cross-repo or higher-privileged operations, you can override it with a PAT:
+
+```yaml
+- name: Run pochi
+  uses: tabbyml/pochi/packages/github-action@main
+  env:
+    GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }} # Your PAT
+    POCHI_TOKEN: ${{ secrets.POCHI_TOKEN }}
+```
+
+### Permissions
+
+Ensure the workflow includes these permissions:
+
+```yaml
+permissions:
+  contents: write # Read repo contents and commit changes if needed
+  issues: write # Comment on issues/PRs
+  pull-requests: write # Access PR information and status
+```
 
 
 # Getting Started
@@ -885,47 +1011,40 @@ icon: "LayoutPanelLeft"
 
 # VS Code
 
-This page covers the core Pochi experience in VS Code: the Home Chat after installation, the locally stored Task List, and Settings including sign-in and BYOK.
+This page covers the core Pochi experience in VS Code, from installation and setup to the main chat and task management features.
 
 ## Installation
 
-Please refer to the installation section in “Getting Started”: see the [Installation Guide](/#installation).
+Install the Pochi extension from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=TabbyML.pochi) or [OpenVSX](https://open-vsx.org/extension/TabbyML/pochi).
 
-* Install the extension from VS Code Marketplace or OpenVSX:
-  * Marketplace: [https://marketplace.visualstudio.com/items?itemName=TabbyML.pochi](https://marketplace.visualstudio.com/items?itemName=TabbyML.pochi)
-  * OpenVSX: [https://open-vsx.org/extension/TabbyML/pochi](https://open-vsx.org/extension/TabbyML/pochi)
-* We recommend dragging the Pochi view to the right sidebar to use it side by side with the editor.
+For the best experience, we recommend dragging the Pochi view to the right sidebar to use it side-by-side with your editor.
 
 ![Drag the Pochi view to the right sidebar for a side-by-side experience.](../assets/images/vscode-right-sidebar.png)
 
 ## Welcome
 
-On first install or the first time you open the extension, a Welcome (Get Started) page appears. You can start in two ways:
+Upon first launch, Pochi's Welcome page offers two ways to get started:
 
-* Bring Your Own Key (BYOK): Go to Settings to configure your model keys, or run “Pochi: Open Custom Model Settings” from the Command Palette to open `~/.pochi/config.jsonc`. Fill in provider API keys and model configurations. See [Models](/models) for details.
-* Sign in to Pochi: Click Sign In, complete authorization in your browser, and you'll be brought back to VS Code. After signing in, you can use Pochi subscriptions and Pochi models, plus cloud/team features (see the “Settings Page” below).
+* **Sign in to Pochi:** Click "Sign In" and authorize in your browser to use Pochi subscriptions, models, and cloud features.
+* **Bring Your Own Key (BYOK):** Use your own models by running `Pochi: Open Custom Model Settings` from the Command Palette. This opens `~/.pochi/config.jsonc` for you to add API keys. See [Models](/models) for details.
 
 <p align="center">![The Welcome page provides options to sign in or configure your own models.](../assets/images/welcome-page.png)</p>
 
 ## Chat
 
-After installation, you'll find the “Pochi” icon in the Activity Bar. Open it to access the Home Chat panel, where you can chat with Pochi and plan/execute tasks.
+Access the Pochi chat panel via the Activity Bar icon or shortcut (macOS: `Cmd+L`, Win/Linux: `Ctrl+L`). This is your main interface for interacting with Pochi.
 
-The panel title bar provides quick actions:
-
-* New Task: Start from a natural-language goal; Pochi will plan and execute steps.
-* Show All Tasks: View and switch between historical task sessions.
-* Settings: Manage account, models, and preferences.
-
-Tip: You can also open the Pochi view via shortcut or the Command Palette (default on macOS: Cmd+L; Windows/Linux: Ctrl+L).
+The panel's title bar includes actions for starting a new task and viewing all tasks.
 
 <p align="center">![The main Chat panel is where you interact with Pochi.](../assets/images/chat-page.png)</p>
 
 ### Toolbox
 
-* Top: Auto Approve menu for autonomous tools.
-* Middle: Chat Input, supports pasting/dragging images.
-* Bottom: Model selector, token usage, share, image upload, send button.
+The toolbox below the chat provides key features:
+
+* **Top:** Auto-approve menu for autonomous tool use.
+* **Middle:** Chat input supporting text and images.
+* **Bottom:** Model selector, token usage, sharing, and image uploads.
 
 <p align="center">
   ![The chat toolbox provides access to key features like model selection and auto-approval.](../assets/images/home-page-toolbox.png)
@@ -933,70 +1052,13 @@ Tip: You can also open the Pochi view via shortcut or the Command Palette (defau
 
 ## Tasks
 
-* By default, task history and content are stored locally (the extension's local DB/storage) and are not uploaded to the cloud.
-* Uninstalling the extension or clearing VS Code's extension data may erase your local task history.
-* If you sign in to your Pochi account and opt to use cloud services, tasks can be associated with your account, shared within your team, and viewed on the web (see “Settings Page” below and the Getting Started page for cloud features).
+Task history is stored locally by default. Signing in to a Pochi account enables cloud storage, sharing, and team collaboration features. Be aware that clearing VS Code's extension data may erase local history.
 
 <p align="center">![The Task List page shows your historical task sessions.](../assets/images/task-page.png)</p>
 
-## Settings
-
-The Settings page includes two common items:
-
-1. Account Sign-in (optional)
-
-* Click “Sign in” in Settings; VS Code will open your browser to the Pochi site for authorization.
-* After authorization, you'll return to VS Code and the extension will show as signed in; you can sign out in Settings.
-* After signing in, you can use Pochi-hosted cloud capabilities such as team collaboration, shared task history, and GitHub/Slack integrations (subject to your account and permissions).
-
-2. Bring Your Own Key (BYOK) and Custom Models (optional)
-
-* Run “Pochi: Open Custom Model Settings” from the Command Palette to open `~/.pochi/config.jsonc`.
-* Fill in provider API keys and model configurations to use your own models and credits.
-* See [Models](/models) for format and examples. The file is JSONC (comments allowed).
-
-Note: You can also use “Pochi: Edit Workspace Rules” to add workflow/rule files for the current project, helping Pochi better understand your conventions (see “Rules” in the sidebar).
-
-<p align="center">![The Settings page allows you to manage your account, models, and other preferences.](../assets/images/settings-page.png)</p>
-
-### Sections
-
-1. Account
-
-* Sign in/out of your Pochi account; after signing in you can use Pochi subscriptions and Pochi models.
-
-2. Workspace Rules
-
-* Show and open workspace rule files (`README.pochi.md` or `AGENTS.md`).
-* If third-party rules are detected (e.g., Cursor rules), you can import them into this repo with one click.
-* See [Rules](/rules) for syntax and search paths.
-
-3. Workflows
-
-* Automatically lists `.pochi/workflows/*.md`; click to open and edit.
-* Type `/` in the chat box to select and run a workflow. See [Workflows](/workflows).
-
-4. Tools & MCP
-
-* Built-in tools: read/write, search, command execution, and more.
-* MCP: start/stop local MCP servers, view tool lists and errors; discover third-party MCP configs and import with one click, or jump to VS Code commands to edit configuration.
-* See [MCP](/mcp) for concepts and usage.
-
-5. Models
-
-* Enable Pochi-hosted models after signing in.
-* BYOK custom models are read from `~/.pochi/config.jsonc`; see [Models](/models).
-* You can enable VS Code's Copilot (Language Model API) models and view their availability.
-
-6. Advanced
-
-* Developer Mode toggle (shows extra debug/experimental options).
-* Control whether to show Pochi-hosted models.
-* Clear local storage and other developer helpers.
-
 ## Troubleshooting
 
-Having issues? Check [Troubleshooting](/troubleshooting), or verify in Settings that your sign-in status and model configuration are valid.
+Having issues? Check [Troubleshooting](/troubleshooting), or verify that your sign-in status and model configuration are valid.
 
 
 # Workflows
