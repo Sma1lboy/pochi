@@ -12,6 +12,15 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Install bun
+      shell: bash
+      run: |
+        if ! curl -fsSL https://bun.com/install | bash > /dev/null 2>&1; then
+          echo "Error: Failed to install bun"
+          exit 1
+        fi
+        echo "$HOME/.bun/bin" >> $GITHUB_PATH
+
     - name: Install dependencies
       shell: bash
       run: |
@@ -56,15 +65,6 @@ runs:
       run: |
         git config --global user.email "noreply@getpochi.com"
         git config --global user.name "Pochi"
-
-    - name: Install bun
-      shell: bash
-      run: |
-        if ! curl -fsSL https://bun.com/install | bash > /dev/null 2>&1; then
-          echo "Error: Failed to install bun"
-          exit 1
-        fi
-        echo "$HOME/.bun/bin" >> $GITHUB_PATH
 
     - name: Run pochi GitHub Action
       shell: bash
