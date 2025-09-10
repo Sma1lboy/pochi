@@ -12,19 +12,19 @@ async function setup() {
   try {
     const githubManager = await GitHubManager.create(github.context);
     const payload = github.context.payload as IssueCommentCreatedEvent;
-    
+
     // Add eyes reaction
     const eyesReactionId = await githubManager.createReaction(
-      payload.comment.id, 
-      "eyes"
+      payload.comment.id,
+      "eyes",
     );
     core.exportVariable("EYES_REACTION_ID", eyesReactionId?.toString() || "");
-    
+
     // Create progress comment with GitHub Action footer
     const initialContent = `Starting Pochi execution...${githubManager.createGitHubActionFooter()}`;
     const progressCommentId = await githubManager.createComment(initialContent);
     core.exportVariable("PROGRESS_COMMENT_ID", progressCommentId.toString());
-    
+
     console.log("Setup completed successfully");
   } catch (error) {
     core.setFailed(error instanceof Error ? error.message : String(error));
