@@ -56,7 +56,7 @@ async function cleanupExecution(
   if (context.outputBuffer.trim()) {
     await core.summary
       .addHeading("Task Details")
-      .addCodeBlock(context.outputBuffer, "text")
+      .addRaw(context.outputBuffer)
       .addRaw(
         `**[View Full GitHub Action](${githubManager.createGitHubActionFooter().match(/\[View GitHub Action\]\((.*?)\)/)?.[1] || "#"})**\n\n`,
       )
