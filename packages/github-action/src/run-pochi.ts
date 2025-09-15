@@ -107,7 +107,7 @@ export async function runPochi(githubManager: GitHubManager): Promise<void> {
   // Execute pochi CLI with output capture
   await new Promise<void>((resolve, reject) => {
     const child = spawn(pochiCliPath, args, {
-      stdio: [null, "pipe", "pipe"], // Capture both stdout and stderr
+      stdio: [null, "pipe", "pipe"],
       cwd: process.cwd(),
       env: {
         ...process.env,
@@ -120,7 +120,6 @@ export async function runPochi(githubManager: GitHubManager): Promise<void> {
     if (child.stdout) {
       child.stdout.setEncoding("utf8");
       child.stdout.on("data", (data: string) => {
-        console.log("[DEBUG] stdout:", data);
         context.outputBuffer += data;
         process.stdout.write(data);
       });
@@ -129,7 +128,6 @@ export async function runPochi(githubManager: GitHubManager): Promise<void> {
     if (child.stderr) {
       child.stderr.setEncoding("utf8");
       child.stderr.on("data", (data: string) => {
-        console.log("[DEBUG] stderr:", data);
         context.outputBuffer += data;
         process.stderr.write(data);
       });
