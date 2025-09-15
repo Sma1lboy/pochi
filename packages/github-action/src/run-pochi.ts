@@ -39,12 +39,11 @@ async function cleanupExecution(
 
   // Finalize history comment
   const truncatedOutput = buildBatchOutput(context.outputBuffer);
-  const finalComment = `\`\`\`\n${truncatedOutput}\n\`\`\`${githubManager.createGitHubActionFooter()}`;
 
-  await githubManager.finalizeComment(
+  await githubManager.updateComment(
     context.historyCommentId,
-    finalComment,
-    success,
+    truncatedOutput,
+    { success },
   );
 
   // Handle reactions
@@ -74,9 +73,7 @@ export async function runPochi(githubManager: GitHubManager): Promise<void> {
 
   const historyCommentId = process.env.PROGRESS_COMMENT_ID
     ? Number.parseInt(process.env.PROGRESS_COMMENT_ID, 10)
-    : await githubManager.createComment(
-        `Starting Pochi execution...${githubManager.createGitHubActionFooter()}`,
-      );
+    : await githubManager.createComment("Starting Pochi execution...");
   const eyesReactionId = process.env.EYES_REACTION_ID
     ? Number.parseInt(process.env.EYES_REACTION_ID, 10)
     : undefined;
@@ -129,8 +126,7 @@ export async function runPochi(githubManager: GitHubManager): Promise<void> {
     context.updateInterval = setInterval(async () => {
       try {
         const truncatedOutput = buildBatchOutput(context.outputBuffer);
-        const progressContent = `\`\`\`\n${truncatedOutput}\n\`\`\`${githubManager.createGitHubActionFooter()}`;
-        await githubManager.updateComment(historyCommentId, progressContent);
+        await githubManager.updateComment(historyCommentId, truncatedOutput);
       } catch (error) {
         console.error("Failed to update comment:", error);
       }
