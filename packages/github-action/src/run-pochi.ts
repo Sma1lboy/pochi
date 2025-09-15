@@ -40,11 +40,9 @@ async function cleanupExecution(
   // Finalize history comment
   const truncatedOutput = buildBatchOutput(context.outputBuffer);
 
-  await githubManager.updateComment(
-    context.historyCommentId,
-    truncatedOutput,
-    { success },
-  );
+  await githubManager.updateComment(context.historyCommentId, truncatedOutput, {
+    success,
+  });
 
   // Handle reactions
   await githubManager.createReaction(request.commentId, reaction);
