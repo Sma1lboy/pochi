@@ -43,7 +43,7 @@ on:
 
 jobs:
   pochi:
-    if: startsWith(github.event.comment.body, '/pochi')
+    if: startsWith(github.event.comment.body, '@pochi-agent')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -67,14 +67,14 @@ jobs:
 
 Notes:
 
-- Triggered by `issue_comment` (created) and runs only if the comment body starts with `/pochi`
+- Triggered by `issue_comment` (created) and runs only if the comment body starts with `@pochi-agent`
 - Requires write permissions to read changes, post comments, and add reactions to PRs
 - Provide `POCHI_API_KEY` via env; optionally set `POCHI_MODEL` to customize the model
 - By default, the action uses GitHub's built-in `GITHUB_TOKEN` (github-actions bot). You can customize this by setting a custom `GITHUB_TOKEN` environment variable with your own Personal Access Token (PAT)
 
 ## Usage
 
-Comment on a PR with `/pochi` followed by your request, e.g. `/pochi review this code`, `/pochi explain the changes in this PR`, `/pochi suggest improvements`.
+Comment on a PR with `@pochi-agent` followed by your request, e.g. `@pochi-agent review this code`, `@pochi-agent explain the changes in this PR`, `@pochi-agent suggest improvements`.
 
 ![Comment example](../assets/images/github-comment.png)
 
