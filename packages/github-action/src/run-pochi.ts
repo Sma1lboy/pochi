@@ -97,7 +97,7 @@ export async function runPochi(githubManager: GitHubManager): Promise<void> {
   }
 
   const context: ExecutionContext = {
-    outputBuffer: "Starting Pochi execution...\n",
+    outputBuffer: "",
     updateInterval: null,
     handled: false,
     historyCommentId,
@@ -107,7 +107,7 @@ export async function runPochi(githubManager: GitHubManager): Promise<void> {
   // Execute pochi CLI with output capture
   await new Promise<void>((resolve, reject) => {
     const child = spawn(pochiCliPath, args, {
-      stdio: [null, "inherit", "pipe"], // Capture stderr
+      stdio: [null, "pipe", "pipe"], // Capture both stdout and stderr
       cwd: process.cwd(),
       env: {
         ...process.env,
@@ -116,10 +116,20 @@ export async function runPochi(githubManager: GitHubManager): Promise<void> {
       },
     });
 
-    // Capture stderr output
+    // Capture stdout and stderr output
+    if (child.stdout) {
+      child.stdout.setEncoding("utf8");
+      child.stdout.on("data", (data: string) => {
+        console.log("[DEBUG] stdout:", data);
+        context.outputBuffer += data;
+        process.stdout.write(data);
+      });
+    }
+
     if (child.stderr) {
       child.stderr.setEncoding("utf8");
       child.stderr.on("data", (data: string) => {
+        console.log("[DEBUG] stderr:", data);
         context.outputBuffer += data;
         process.stderr.write(data);
       });
