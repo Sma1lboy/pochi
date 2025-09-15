@@ -54,9 +54,36 @@ async function cleanupExecution(
   }
 
   if (context.outputBuffer.trim()) {
+    // Debug log to check outputBuffer structure
+    console.log("=== Debug: OutputBuffer before processing ===");
+    console.log("Length:", context.outputBuffer.length);
+    console.log(
+      "First 200 chars (escaped):",
+      JSON.stringify(context.outputBuffer.slice(0, 200)),
+    );
+    console.log("Contains \\n\\n:", context.outputBuffer.includes("\n\n"));
+    console.log(
+      "Number of \\n:",
+      (context.outputBuffer.match(/\n/g) || []).length,
+    );
+
+    // Convert single newlines to double newlines for proper markdown rendering
+    // But preserve existing double newlines
+    const markdownFormattedOutput = context.outputBuffer
+      .replace(/\n\n/g, "<<<DOUBLE_NEWLINE>>>") // Temporarily mark double newlines
+      .replace(/\n/g, "\n\n") // Convert single newlines to double
+      .replace(/<<<DOUBLE_NEWLINE>>>/g, "\n\n"); // Restore double newlines
+
+    console.log("=== Debug: OutputBuffer after processing ===");
+    console.log("Length:", markdownFormattedOutput.length);
+    console.log(
+      "First 200 chars (escaped):",
+      JSON.stringify(markdownFormattedOutput.slice(0, 200)),
+    );
+
     await core.summary
       .addHeading("Task Details")
-      .addRaw(context.outputBuffer)
+      .addRaw(markdownFormattedOutput)
       .addRaw(
         `**[View Full GitHub Action](${githubManager.createGitHubActionFooter().match(/\[View GitHub Action\]\((.*?)\)/)?.[1] || "#"})**\n\n`,
       )
