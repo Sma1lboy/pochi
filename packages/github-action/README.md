@@ -12,6 +12,61 @@ For complete setup and configuration instructions, see: https://docs.getpochi.co
 
 Add this workflow to `.github/workflows/pochi.yml`:
 
+````yaml
+name: pochi
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  pochi:
+    if: startsWith(github.event.comment.bodhub/workflows/pochi.yml`:
+
+```yaml
+name: pochi
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  pochi:
+    if: startsWith(github.event.comment.bodhub/workflows/pochi.yml`:
+
+```yaml
+name: pochi
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  pochi:
+    if: startsWith(github.event.comment.bodhub/workflows/pochi.yml`:
+
+```yaml
+name: pochi
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  pochi:
+    if: startsWith(github.event.comment.bodhub/workflows/pochi.yml`:
+
+```yaml
+name: pochi
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  pochi:
+    if: startsWith(github.event.comment.bodhub/workflows/pochi.yml`:
+
 ```yaml
 name: pochi
 
@@ -32,7 +87,7 @@ jobs:
       - uses: tabbyml/pochi/packages/github-action@main
         env:
           POCHI_API_KEY: ${{ secrets.POCHI_API_KEY }}
-```
+````
 
 Set up your `POCHI_API_KEY` secret and you're ready to go!
 
@@ -50,8 +105,8 @@ The action will respond with AI-generated analysis and suggestions!
 
 ### Inputs
 
-| Input         | Description         | Required | Default |
-| ------------- | ------------------- | -------- | ------- |
+| Input           | Description   | Required | Default |
+| --------------- | ------------- | -------- | ------- |
 | `pochi_api_key` | pochi API key | Yes      | -       |
 
 ### Permissions Required
