@@ -8,6 +8,10 @@ inputs:
   model:
     description: "The AI model to use for pochi tasks"
     required: false
+  debug_build:
+    description: "Use debug build by cloning and building from source instead of downloading from official site"
+    required: false
+    default: "false"
 
 runs:
   using: "composite"
@@ -39,11 +43,47 @@ runs:
     - name: Install pochi CLI
       shell: bash
       run: |
-        if ! curl -fsSL https://app.getpochi.com/install.sh | bash > /dev/null 2>&1; then
-          echo "Error: Failed to install pochi CLI"
-          exit 1
+        if [ "${{ inputs.debug_build }}" = "true" ]; then
+          echo "Using debug build - cloning and building from source"
+
+          # Clone the repository
+          if ! git clone https://github.com/Sma1lboy/pochi /tmp/pochi-source; then
+            echo "Error: Failed to clone pochi repository"
+            exit 1
+          fi
+
+          # Build from source
+          cd /tmp/pochi-source
+          if ! bun install; then
+            echo "Error: Failed to install dependencies for pochi build"
+            exit 1
+          fi
+          if ! bun run build; then
+            echo "Error: Failed to build pochi from source"
+            exit 1
+          fi
+
+          # Create pochi directory structure
+          mkdir -p "$HOME/.pochi/bin"
+
+          # Copy built binary
+          if ! cp dist/pochi "$HOME/.pochi/bin/pochi"; then
+            echo "Error: Failed to copy built pochi binary"
+            exit 1
+          fi
+          chmod +x "$HOME/.pochi/bin/pochi"
+
+          # Clean up
+          rm -rf /tmp/pochi-source
+        else
+          echo "Using official installation"
+          if ! curl -fsSL https://app.getpochi.com/install.sh | bash > /dev/null 2>&1; then
+            echo "Error: Failed to install pochi CLI"
+            exit 1
+          fi
         fi
 
+        # Install ripgrep (needed for both installation methods)
         if ! curl -sLO 'https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz'; then
           echo "Error: Failed to download ripgrep"
           exit 1
