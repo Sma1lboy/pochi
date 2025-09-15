@@ -336,7 +336,7 @@ Weekly update notes from Pochi developers
 ***
 
 title: "Developer Updates"
-icon: "FileTerminal"
+icon: "Newspaper"
 description: "Weekly update notes from Pochi developers"
 --------------------------------------------------------
 
@@ -345,6 +345,38 @@ description: "Weekly update notes from Pochi developers"
 Welcome to the Pochi Developer Updates — a **weekly digest** of what's new in the codebase.
 
 Here you will find highlights on features, enhancements, and bug fixes, plus insights into how we're improving the developer experience. Come back often! 👋
+
+***
+
+## Sep 12, 2025
+
+### TL;DR
+
+This week we brought **custom agents** to life!🐣 Pochi **CLI is on npm**, `newTask` makes it simple to create and manage tasks right from the terminal, and Mermaid diagrams render beautifully inside the app. MCP interactions are smarter too, and the docs and UI keep getting smoother with every update. ✨
+
+### Features 🚀
+
+* **Custom Agents:** Define your own assistants in `.pochi/agents` using markdown. [#176](https://github.com/TabbyML/pochi/pull/176), [#181](https://github.com/TabbyML/pochi/pull/181)
+* **`newTask` in CLI:** Spin up tasks directly from the terminal, each with its dedicated agent. [#232](https://github.com/TabbyML/pochi/pull/232)
+* **Mermaid diagrams:** Drop Mermaid code blocks into Pochi and see them rendered as nice diagrams. [#255](https://github.com/TabbyML/pochi/pull/255)
+
+<div className="w-4/7 md:ml-8 *:shadow-xl/30 *:rounded-lg">![Mermaid.js rendered diagram](../assets/images/mermaid-js-diagram.png)</div>
+
+### Enhancements ✨
+
+* **Pochi CLI on npm 📦:** `npm install -g pochi` and get it running! [#238](https://github.com/TabbyML/pochi/pull/238)
+* **Custom models for completion:** Use your own models for code completion in VS Code. [#251](https://github.com/TabbyML/pochi/pull/251)
+* **MCP instructions:** MCP servers can now guide models on tool usage, enabling more complex interactions. [#254](https://github.com/TabbyML/pochi/pull/254)
+* **Token auth:** Log in with a token when browser auth doesn't work. [#235](https://github.com/TabbyML/pochi/pull/235), [#236](https://github.com/TabbyML/pochi/pull/236)
+* **Diff view focus mode:** Pochi automatically closes a file's regular editor tab when opening its diff view. [#197](https://github.com/TabbyML/pochi/pull/197)
+* **More CLI commands:** `pochi mcp list` to inspect configured MCP servers, and `pochi task list` to check task lists. [#231](https://github.com/TabbyML/pochi/pull/231), [#266](https://github.com/TabbyML/pochi/pull/266)
+  <div className="w-2/3">![Pochi CLI Task List](../assets/images/cli-task-list.png)</div>
+* **VS Code UI polish**: Autocomplete mention list is responsive and tabbable, workflow list is collapsible and better spaced. [#215](https://github.com/TabbyML/pochi/pull/215), [#204](https://github.com/TabbyML/pochi/pull/204), [#230](https://github.com/TabbyML/pochi/pull/230), [#228](https://github.com/TabbyML/pochi/pull/228), [#242](https://github.com/TabbyML/pochi/pull/242)
+* **Docs updates:** Added checkpoint feature and updated GitHub integration docs with API key setup. [#203](https://github.com/TabbyML/pochi/pull/203), [#262](https://github.com/TabbyML/pochi/pull/262)
+
+### Bug fixes 🐛
+
+* **Scoped replies:** Pochi only responds when you start a comment with `/pochi`. [#202](https://github.com/TabbyML/pochi/pull/202)
 
 ***
 
@@ -410,7 +442,7 @@ icon: "Github"
 
 # GitHub
 
-Use Pochi’s AI assistant directly in your GitHub repository by commenting on pull requests to perform code reviews, explain changes, and suggest improvements.
+Use Pochi's AI assistant directly in your GitHub repository by commenting on pull requests to perform code reviews, explain changes, and suggest improvements.
 
 <Callout type="info" title="How it works">
   This integration runs inside a GitHub Actions runner. It temporarily installs
@@ -418,6 +450,22 @@ Use Pochi’s AI assistant directly in your GitHub repository by commenting on p
   is continuously updated under the triggering comment, and a final result
   (✅/❌) is posted when finished.
 </Callout>
+
+## Getting Your API Keys
+
+1. Log in to your Pochi account and go to **API Keys** from your user menu
+
+![User button overview](../assets/images/api-overview.png)
+
+2. Create a new API key with a descriptive name
+3. Copy the generated key (it's only shown once)
+
+![API page interface](../assets/images/api-page-interface.png)
+
+4. Add it to your GitHub repository as a secret named `POCHI_API_KEY`. See [GitHub's official guide](https://docs.github.com/en/actions/how-tos/write-workflows/choose-what-workflows-do/use-secrets) for detailed steps:
+   * Go to **Settings** → **Secrets and variables** → **Actions**
+   * Click **"New repository secret"**
+   * Name: `POCHI_API_KEY`, Value: your API key
 
 ## Setup
 
@@ -448,7 +496,7 @@ jobs:
         uses: tabbyml/pochi/packages/github-action@main
         env:
           # Required: Pochi session token (get it from app.getpochi.com and add as a repository secret)
-          POCHI_TOKEN: ${{ secrets.POCHI_TOKEN }}
+          POCHI_API_KEY: ${{ secrets.POCHI_API_KEY }}
           # Optional: custom model (defaults to CLI's default model if not set)
           # See the Models page for model options and configuration
           # POCHI_MODEL: google/gemini-2.5-pro
@@ -458,7 +506,7 @@ Notes:
 
 * Triggered by `issue_comment` (created) and runs only if the comment body starts with `/pochi`
 * Requires write permissions to read changes, post comments, and add reactions to PRs
-* Provide `POCHI_TOKEN` via env; optionally set `POCHI_MODEL` to customize the model
+* Provide `POCHI_API_KEY` via env; optionally set `POCHI_MODEL` to customize the model
 * By default, the action uses GitHub's built-in `GITHUB_TOKEN` (github-actions bot). You can customize this by setting a custom `GITHUB_TOKEN` environment variable with your own Personal Access Token (PAT)
 
 ## Usage
@@ -469,7 +517,7 @@ Comment on a PR with `/pochi` followed by your request, e.g. `/pochi review this
 
 Once triggered:
 
-* Pochi reacts to your comment with 👀 to indicate it’s running
+* Pochi reacts to your comment with 👀 to indicate it's running
 * A progress comment is updated every 15 seconds
 * When finished, it posts the final result and reacts with 🚀 (success) or −1 (failure)
 
@@ -490,7 +538,7 @@ By default, the action uses the GitHub-provided `GITHUB_TOKEN`. For cross-repo o
   uses: tabbyml/pochi/packages/github-action@main
   env:
     GITHUB_TOKEN: ${{ secrets.CUSTOM_GITHUB_TOKEN }} # Your PAT
-    POCHI_TOKEN: ${{ secrets.POCHI_TOKEN }}
+    POCHI_API_KEY: ${{ secrets.POCHI_API_KEY }}
 ```
 
 ### Permissions
@@ -1100,9 +1148,36 @@ Works across popular programming languages including:
 | `Alt + ]`      | Next suggestion (if multiple available)     |
 | `Alt + [`      | Previous suggestion (if multiple available) |
 
+## Tab Completion Model Settings
+
+You can customize the code completion provider in your VS Code settings, allowing you to switch between different models, including those running on your local machine.
+
+By default, Pochi uses its own hosted code completion model. Alternatively, you can configure Pochi to use any OpenAI-compatible server that provides a Fill-in-the-Middle (FIM) completion model.
+
+Here is an example configuration for a local OpenAI-compatible server running `qwen3-coder-30b-a3b` on port 8000:
+
+```json
+  "pochi.advanced": {
+    "inlineCompletion": {
+      "provider": {
+        "type": "openai",
+        "baseURL": "http://127.0.0.1:8000/v1",
+        "apiKey": "",
+        "model": "qwen3-coder-30b-a3b",
+        "promptTemplate": "<|fim_prefix|>{{prefix}}<|fim_suffix|>{{suffix}}<|fim_middle|>"
+      }
+    }
+  },
+```
+
+* **baseURL**: The base URL of the OpenAI-compatible server.
+* **apiKey**: The API key for the server. If not set, Pochi will use the `POCHI_CODE_COMPLETION_OPENAI_API_KEY` environment variable. This can be left empty if the server does not require an API key.
+* **model**: The name of the FIM completion model to use.
+* **promptTemplate**: The prompt template for FIM completion. It must include `{{prefix}}` and `{{suffix}}` placeholders.
+
 ***
 
-**Need help?** Visit our [Community Support](/community-support) page or join our [Discord](https://discord.com/invite/tWF66yr8NQ) for assistance with Tab Completion features.
+**Need help?** Join our [Discord](http://getpochi.com/discord) for assistance with Tab Completion features.
 
 
 # Troubleshooting
