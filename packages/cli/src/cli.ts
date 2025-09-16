@@ -33,12 +33,7 @@ import { createStore } from "./livekit/store";
 import { registerMcpCommand } from "./mcp";
 import { registerModelCommand } from "./model";
 import { OutputRenderer } from "./output-renderer";
-import {
-  registerShutdownCallback,
-  safeRendererShutdown,
-  safeStoreShutdown,
-  setupShutdownHandlers,
-} from "./shutdown";
+import { safeShutdownStore } from "./shutdown";
 import { registerTaskCommand } from "./task";
 import { TaskRunner } from "./task-runner";
 import { checkForUpdates, registerUpgradeCommand } from "./upgrade";
@@ -46,8 +41,16 @@ import { checkForUpdates, registerUpgradeCommand } from "./upgrade";
 const logger = getLogger("Pochi");
 logger.debug(`pochi v${packageJson.version}`);
 
-// Setup shutdown handlers early
-setupShutdownHandlers();
+// Simple signal handlers - just exit immediately
+process.once("SIGINT", () => {
+  logger.debug("Received SIGINT, exiting...");
+  process.exit(130);
+});
+
+process.once("SIGTERM", () => {
+  logger.debug("Received SIGTERM, exiting...");
+  process.exit(1);
+});
 
 const parsePositiveInt = (input: string): number => {
   if (!input) {
@@ -124,12 +127,6 @@ const program = new Command()
 
     const renderer = new OutputRenderer(runner.state);
 
-    // Register cleanup for this task session
-    registerShutdownCallback(async () => {
-      safeRendererShutdown(renderer);
-      await safeStoreShutdown(store);
-    });
-
     await runner.run();
 
     const shareId = runner.shareId;
@@ -141,11 +138,9 @@ const program = new Command()
       console.log(`\n${chalk.bold("Task link: ")} ${shareUrl}`);
     }
 
-    // Normal completion cleanup
-    safeRendererShutdown(renderer);
-    await safeStoreShutdown(store);
+    renderer.shutdown();
+    await safeShutdownStore(store);
 
-    // Force exit to ensure we don't hang
     process.exit(0);
   });
 
