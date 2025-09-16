@@ -344,60 +344,25 @@ EOF
 
 # Create PR to main with test configuration
 create_test_pr() {
-    log "Creating PR from $FEATURE_BRANCH to main..."
+    log "Creating test PR from $FEATURE_BRANCH to main..."
 
-    # Create PR with comprehensive description
-    PR_BODY="## 🚀 Pull Request: $FEATURE_BRANCH
+    # Simple PR body for testing
+    PR_BODY="## 🧪 Test PR for $FEATURE_BRANCH
 
-This PR includes the development changes and testing configuration.
+**How to test:** Comment \`/pochi-test <your prompt>\` on this PR
 
-### 🧪 How to Test This PR
-
-1. **Comment on this PR**: \`/pochi-test your test prompt here\`
-2. **Or use the default test**: \`/pochi-test\`
-
-The GitHub Action will automatically test the CLI code from this branch.
-
-### 📋 What This Tests
-
-- **Branch**: \`$FEATURE_BRANCH\`
-- **Development Mode**: Enabled with verbose logging
-- **Repository**: \`$GITHUB_USER/$REPO_NAME\`
-
-### 🔧 Example Test Commands
-
-\`\`\`
-/pochi-test Please test the new shutdown mechanism
-/pochi-test List all TypeScript files and count them
-/pochi-test Create a simple README file
-/pochi-test Help me analyze the codebase structure
-\`\`\`
-
-### ✅ Features Included
-
-- ✅ Test workflow that triggers on PR comments
-- ✅ Automatic CLI building from this branch
-- ✅ Development mode with verbose logging
-- ✅ Real GitHub Actions environment testing
-
-### 🤖 Auto-generated test setup
-
-Branch: \`$FEATURE_BRANCH\`
-Generated at: \`$(date)\`
-Test prompt: \`$TEST_PROMPT\`
-
----
-
-**Ready to test!** Comment \`/pochi-test <your prompt>\` to test the CLI changes in this PR."
+**Example:** \`/pochi-test List all TypeScript files\`"
 
     PR_URL=$(gh pr create \
-        --title "$FEATURE_BRANCH" \
+        --title "🧪 Test: $FEATURE_BRANCH" \
         --body "$PR_BODY" \
         --base main \
         --head "$FEATURE_BRANCH")
 
-    log "PR created: $PR_URL"
+    log "Test PR created successfully!"
     echo -e "${BLUE}🔗 PR URL: $PR_URL${NC}"
+    echo ""
+    echo -e "${GREEN}✅ Ready to test! Comment '/pochi-test <your prompt>' on the PR${NC}"
 }
 
 # Show current status
@@ -512,9 +477,9 @@ setup_test() {
 
     if [[ "$CREATE_PR" == true ]]; then
         create_test_pr
+    else
+        show_instructions
     fi
-
-    show_instructions
 }
 
 # Main execution
