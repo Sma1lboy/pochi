@@ -1,0 +1,61 @@
+name: Pochi Development Test
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+jobs:
+  pochi-test:
+    if: |
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '/pochi-test')) ||
+      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '/pochi-test'))
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: React with eyes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const comment_id = context.payload.comment.id;
+            await github.rest.reactions.createForIssueComment({
+              owner,
+              repo,
+              comment_id,
+              content: 'eyes'
+            });
+
+      - name: Extract prompt from comment
+        id: extract-prompt
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const comment = context.payload.comment.body;
+            const match = comment.match(/\/pochi-test\s+(.+)/s);
+            const prompt = match ? match[1].trim() : 'Please test the updated pochi CLI';
+            core.setOutput('prompt', prompt);
+            console.log('Extracted prompt:', prompt);
+
+      - name: Run Pochi Development Test
+        uses: Sma1lboy/pochi/packages/github-action@chore-adding-test-ci
+        with:
+          model: "qwen/qwen3-coder"
+          source_repo: "Sma1lboy/pochi"
+          source_ref: "chore-adding-test-ci"
+          dev_mode: "true"
+        env:
+          POCHI_CUSTOM_INSTRUCTIONS: |
+            ## Development Test Instructions
+
+            This is a development test of the Pochi CLI from branch: chore-adding-test-ci
+
+            User prompt: ${{ steps.extract-prompt.outputs.prompt }}
+
+            Please execute the user's request and verify that the new features work correctly.
+
+            After completing the task, please comment on this issue with:
+            1. Summary of what was accomplished
+            2. Any issues or improvements noticed
+            3. Confirmation that the development changes work as expected

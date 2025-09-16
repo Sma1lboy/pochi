@@ -28,7 +28,6 @@ export class GitHubManager {
   }
 
   async check() {
-    this.checkPochiKeyword();
     await this.checkPermissions();
   }
 
@@ -183,14 +182,6 @@ export class GitHubManager {
 
     if (!["admin", "write"].includes(permission)) {
       throw new Error(`User ${actor} does not have write permissions`);
-    }
-  }
-
-  // Validation and parsing operations
-  private checkPochiKeyword(): void {
-    const body = this.payload.comment.body.trim();
-    if (!body.match(/(?:^|\s)\/pochi(?=$|\s)/)) {
-      throw new Error("Comments must mention `/pochi`");
     }
   }
 
