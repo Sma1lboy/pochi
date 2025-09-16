@@ -250,9 +250,10 @@ add_test_configuration() {
     # Create the test workflow
     create_test_workflow
 
-    # Commit changes to current branch
-    git add "$GIT_ROOT/.github/"
-    git commit -m "feat: add GitHub Action test configuration
+    # Commit changes to current branch (if there are any)
+    if ! git diff-index --quiet HEAD --; then
+        git add "$GIT_ROOT/.github/"
+        git commit -m "feat: add GitHub Action test configuration
 
 - Add test workflow for PR testing
 - Configure action to test current branch: $FEATURE_BRANCH
@@ -260,10 +261,12 @@ add_test_configuration() {
 
 Test with: /pochi-test $TEST_PROMPT"
 
-    # Push current branch
-    git push "$FORK_REMOTE" "$FEATURE_BRANCH" --no-verify
-
-    log "Test configuration added to current branch"
+        # Push current branch
+        git push "$FORK_REMOTE" "$FEATURE_BRANCH" --no-verify
+        log "Test configuration added to current branch"
+    else
+        log "Test configuration already exists, skipping commit"
+    fi
 }
 
 # Create test workflow
