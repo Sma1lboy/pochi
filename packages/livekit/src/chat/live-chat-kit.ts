@@ -68,7 +68,7 @@ export class LiveChatKit<
     this.store = store;
     this.transport = new FlexibleChatTransport({
       store,
-      onStart: this.onStart,
+      onStart: this.onStart.bind(this),
       getters,
       isSubTask,
       isCli,
@@ -80,8 +80,8 @@ export class LiveChatKit<
       id: taskId,
       messages: this.messages,
       generateId: () => crypto.randomUUID(),
-      onFinish: this.onFinish,
-      onError: this.onError,
+      onFinish: this.onFinish.bind(this),
+      onError: this.onError.bind(this),
       transport: this.transport,
     });
 
