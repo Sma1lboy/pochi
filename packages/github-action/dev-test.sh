@@ -236,7 +236,7 @@ prepare_feature_branch() {
     # Push feature branch if it doesn't exist on remote
     if ! git ls-remote --exit-code --heads "$FORK_REMOTE" "$FEATURE_BRANCH" > /dev/null 2>&1; then
         log "Pushing feature branch to remote..."
-        git push -u "$FORK_REMOTE" "$FEATURE_BRANCH"
+        git push -u "$FORK_REMOTE" "$FEATURE_BRANCH" --no-verify
     else
         log "Feature branch already exists on remote, updating..."
         git push "$FORK_REMOTE" "$FEATURE_BRANCH" --no-verify
@@ -261,7 +261,7 @@ add_test_configuration() {
 Test with: /pochi-test $TEST_PROMPT"
 
     # Push current branch
-    git push "$FORK_REMOTE" "$FEATURE_BRANCH"
+    git push "$FORK_REMOTE" "$FEATURE_BRANCH" --no-verify
 
     log "Test configuration added to current branch"
 }
@@ -455,7 +455,7 @@ clean_branches() {
     if [[ $REPLY =~ ^[Yy]$ ]]; then
         for branch in $action_branches; do
             echo "Deleting branch: $branch"
-            git push origin --delete "$branch" 2>/dev/null || echo "  (already deleted or doesn't exist)"
+            git push origin --delete "$branch" 2>/dev/null --no-verify || echo "  (already deleted or doesn't exist)"
             git branch -D "$branch" 2>/dev/null || echo "  (local branch doesn't exist)"
         done
         echo -e "${GREEN}✅ Cleanup complete${NC}"
