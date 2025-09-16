@@ -267,6 +267,8 @@ Test with: /pochi-test $TEST_PROMPT"
     else
         log "Test configuration already exists, skipping commit"
     fi
+
+    log "Test configuration setup completed"
 }
 
 # Create test workflow
