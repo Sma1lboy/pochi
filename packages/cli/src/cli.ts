@@ -144,6 +144,9 @@ const program = new Command()
     // Normal completion cleanup
     safeRendererShutdown(renderer);
     await safeStoreShutdown(store);
+
+    // Force exit to ensure we don't hang
+    process.exit(0);
   });
 
 const otherOptionsGroup = "Others:";
