@@ -11,20 +11,20 @@
 # USAGE PATTERN:
 #   1. Work on your feature branch (e.g., feature/shutdown-fix)
 #   2. Run this script from your feature branch: ./packages/github-action/dev-test.sh quick
-#   3. Script creates an action-test branch and test PR
+#   3. Script adds test configuration to your feature branch and creates PR to main
 #   4. Comment '/pochi-test <your prompt>' on the PR to test your changes
 #
 # BRANCH STRATEGY:
-#   - Feature Branch: Contains your CLI code changes (where you run this script)
-#   - Action Branch: Auto-created branch containing GitHub Action test setup
-#   - The Action will clone and build CLI from your Feature Branch
+#   - Feature Branch: Contains your CLI code changes + test configuration
+#   - PR: Direct feature branch → main with integrated testing
+#   - The Action will test CLI from the same branch as the PR
 #
 # EXAMPLE WORKFLOW:
 #   git checkout feature/my-awesome-feature
 #   # Make your CLI changes...
-#   git push origin feature/my-awesome-feature
 #   ./packages/github-action/dev-test.sh quick
-#   # Go to created PR and comment: /pochi-test Please test my feature
+#   # Script creates feature/my-awesome-feature → main PR
+#   # Comment on PR: /pochi-test Please test my feature
 #
 # =============================================================================
 
@@ -56,7 +56,7 @@ print_usage() {
     echo "📋 WORKFLOW:"
     echo "  1. Work on your feature branch (e.g., feature/my-awesome-feature)"
     echo "  2. Run this script from your feature branch"
-    echo "  3. Script creates action-test branch and test PR"
+    echo "  3. Script adds test config to your branch and creates PR to main"
     echo "  4. Comment '/pochi-test <prompt>' on the PR to test"
     echo ""
     echo "Usage: $0 [COMMAND] [OPTIONS]"
@@ -159,9 +159,8 @@ detect_setup() {
         log "Using current branch as feature branch: $FEATURE_BRANCH"
     fi
 
-    # Generate action branch name
-    ACTION_BRANCH="action-test-$(echo "$FEATURE_BRANCH" | sed 's/[^a-zA-Z0-9-]/-/g')"
-    log "Generated action branch name: $ACTION_BRANCH"
+    # No need for separate action branch - using feature branch directly
+    log "Will use feature branch for both CLI code and GitHub Action"
 
     # Detect fork remote
     if [[ -z "$FORK_REMOTE" ]]; then
@@ -240,39 +239,27 @@ prepare_feature_branch() {
     fi
 }
 
-# Create and setup action test branch
-create_action_branch() {
-    log "Creating action test branch: $ACTION_BRANCH"
-
-    # Get the base branch (usually main)
-    BASE_BRANCH=$(git remote show "$FORK_REMOTE" | grep "HEAD branch" | awk '{print $NF}')
-    if [[ -z "$BASE_BRANCH" ]]; then
-        BASE_BRANCH="main"
-    fi
-
-    # Fetch latest changes
-    git fetch "$FORK_REMOTE"
-
-    # Create action branch from base branch
-    git checkout -B "$ACTION_BRANCH" "$FORK_REMOTE/$BASE_BRANCH"
+# Add test configuration to current branch
+add_test_configuration() {
+    log "Adding test configuration to current branch: $FEATURE_BRANCH"
 
     # Create the test workflow
     create_test_workflow
 
-    # Commit changes
+    # Commit changes to current branch
     git add .github/
-    git commit -m "feat: setup GitHub Action testing for $FEATURE_BRANCH
+    git commit -m "feat: add GitHub Action test configuration
 
-- Add test workflow for development
-- Configure action to use development branch: $FEATURE_BRANCH
+- Add test workflow for PR testing
+- Configure action to test current branch: $FEATURE_BRANCH
 - Enable development mode with verbose logging
 
 Test with: /pochi-test $TEST_PROMPT"
 
-    # Push action branch
-    git push -u "$FORK_REMOTE" "$ACTION_BRANCH"
+    # Push current branch
+    git push "$FORK_REMOTE" "$FEATURE_BRANCH"
 
-    log "Action test branch created and pushed"
+    log "Test configuration added to current branch"
 }
 
 # Create test workflow
@@ -323,7 +310,7 @@ jobs:
             console.log('Extracted prompt:', prompt);
 
       - name: Run Pochi Development Test
-        uses: $GITHUB_USER/$REPO_NAME/packages/github-action@$ACTION_BRANCH
+        uses: $GITHUB_USER/$REPO_NAME/packages/github-action@$FEATURE_BRANCH
         with:
           model: "qwen/qwen3-coder"
           source_repo: "$GITHUB_USER/$REPO_NAME"
@@ -348,61 +335,62 @@ EOF
     log "Test workflow created: .github/workflows/pochi-dev-test.yml"
 }
 
-# Create test PR
+# Create PR to main with test configuration
 create_test_pr() {
-    log "Creating test PR..."
+    log "Creating PR from $FEATURE_BRANCH to main..."
 
     # Create PR with comprehensive description
-    PR_BODY="## 🧪 Development Test Setup for \`$FEATURE_BRANCH\`
+    PR_BODY="## 🚀 Pull Request: $FEATURE_BRANCH
 
-This PR sets up automated testing for the development branch \`$FEATURE_BRANCH\`.
+This PR includes the development changes and testing configuration.
 
-### How to Test
+### 🧪 How to Test This PR
 
 1. **Comment on this PR**: \`/pochi-test your test prompt here\`
 2. **Or use the default test**: \`/pochi-test\`
 
-### What This Tests
+The GitHub Action will automatically test the CLI code from this branch.
 
-- **CLI Branch**: \`$FEATURE_BRANCH\`
-- **Action Branch**: \`$ACTION_BRANCH\`
+### 📋 What This Tests
+
+- **Branch**: \`$FEATURE_BRANCH\`
 - **Development Mode**: Enabled with verbose logging
 - **Repository**: \`$GITHUB_USER/$REPO_NAME\`
 
-### Example Test Commands
+### 🔧 Example Test Commands
 
 \`\`\`
 /pochi-test Please test the new shutdown mechanism
 /pochi-test List all TypeScript files and count them
 /pochi-test Create a simple README file
+/pochi-test Help me analyze the codebase structure
 \`\`\`
 
-### Development Setup
+### ✅ Features Included
 
-This PR includes:
-- ✅ Test workflow that triggers on comments
-- ✅ Development action configuration
-- ✅ Automatic source branch detection
-- ✅ Verbose logging for debugging
+- ✅ Test workflow that triggers on PR comments
+- ✅ Automatic CLI building from this branch
+- ✅ Development mode with verbose logging
+- ✅ Real GitHub Actions environment testing
 
-### Auto-generated by dev-test.sh
+### 🤖 Auto-generated test setup
 
-Feature branch: \`$FEATURE_BRANCH\`
-Action branch: \`$ACTION_BRANCH\`
+Branch: \`$FEATURE_BRANCH\`
 Generated at: \`$(date)\`
+Test prompt: \`$TEST_PROMPT\`
 
 ---
 
-**Ready to test!** Comment \`/pochi-test\` followed by your test prompt."
+**Ready to test!** Comment \`/pochi-test <your prompt>\` to test the CLI changes in this PR."
 
     PR_URL=$(gh pr create \
-        --title "🧪 Test Setup for $FEATURE_BRANCH" \
+        --title "$FEATURE_BRANCH" \
         --body "$PR_BODY" \
-        --label "testing,development" \
-        --draft)
+        --base main \
+        --head "$FEATURE_BRANCH")
 
-    log "Test PR created: $PR_URL"
-    echo -e "${BLUE}🔗 Test PR URL: $PR_URL${NC}"
+    log "PR created: $PR_URL"
+    echo -e "${BLUE}🔗 PR URL: $PR_URL${NC}"
 }
 
 # Show current status
@@ -413,16 +401,13 @@ show_status() {
     current_branch=$(git branch --show-current)
     echo "Current branch: $current_branch"
 
-    # Check for action test branches
+    # Check for action test branches (legacy)
     action_branches=$(git branch -r | grep -E "origin/action-test-" | sed 's/origin\///' | sed 's/^[[:space:]]*//')
 
     if [[ -n "$action_branches" ]]; then
         echo ""
-        echo "Active test branches:"
+        echo "Legacy test branches (can be cleaned up):"
         echo "$action_branches"
-    else
-        echo ""
-        echo "No active test branches found"
     fi
 
     # Check for test workflow
@@ -496,10 +481,9 @@ show_instructions() {
 
     echo ""
     echo -e "${BLUE}📊 Configuration:${NC}"
-    echo "   Feature Branch: $FEATURE_BRANCH"
-    echo "   Action Branch:  $ACTION_BRANCH"
-    echo "   Repository:     $GITHUB_USER/$REPO_NAME"
-    echo "   Dev Mode:       Enabled"
+    echo "   Branch: $FEATURE_BRANCH"
+    echo "   Repository: $GITHUB_USER/$REPO_NAME"
+    echo "   Dev Mode: Enabled"
     echo ""
     echo -e "${BLUE}🔧 Advanced Usage:${NC}"
     echo "   • Use any prompt: '/pochi-test your custom prompt here'"
@@ -517,7 +501,7 @@ setup_test() {
     detect_setup
     check_prerequisites
     prepare_feature_branch
-    create_action_branch
+    add_test_configuration
 
     if [[ "$CREATE_PR" == true ]]; then
         create_test_pr
