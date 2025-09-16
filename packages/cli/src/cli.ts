@@ -36,9 +36,13 @@ import { OutputRenderer } from "./output-renderer";
 import { registerTaskCommand } from "./task";
 import { TaskRunner } from "./task-runner";
 import { checkForUpdates, registerUpgradeCommand } from "./upgrade";
+import { setupShutdownHandlers, safeStoreShutdown, registerShutdownCallback, safeRendererShutdown } from "./shutdown";
 
 const logger = getLogger("Pochi");
 logger.debug(`pochi v${packageJson.version}`);
+
+// Setup shutdown handlers early
+setupShutdownHandlers();
 
 const parsePositiveInt = (input: string): number => {
   if (!input) {
@@ -115,9 +119,13 @@ const program = new Command()
 
     const renderer = new OutputRenderer(runner.state);
 
-    await runner.run();
+    // Register cleanup for this task session
+    registerShutdownCallback(async () => {
+      safeRendererShutdown(renderer);
+      await safeStoreShutdown(store);
+    });
 
-    renderer.shutdown();
+    await runner.run();
 
     const shareId = runner.shareId;
     if (shareId) {
@@ -128,7 +136,9 @@ const program = new Command()
       console.log(`\n${chalk.bold("Task link: ")} ${shareUrl}`);
     }
 
-    await store.shutdown();
+    // Normal completion cleanup
+    safeRendererShutdown(renderer);
+    await safeStoreShutdown(store);
   });
 
 const otherOptionsGroup = "Others:";
