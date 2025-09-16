@@ -25,6 +25,7 @@ import { registerAuthCommand } from "./auth";
 
 import { findRipgrep } from "./lib/find-ripgrep";
 import { loadAgents } from "./lib/load-agents";
+import { shutdownStoreAndExit } from "./lib/store-utils";
 import {
   containsWorkflowReference,
   replaceWorkflowReferences,
@@ -33,7 +34,6 @@ import { createStore } from "./livekit/store";
 import { registerMcpCommand } from "./mcp";
 import { registerModelCommand } from "./model";
 import { OutputRenderer } from "./output-renderer";
-import { shutdownStoreAndExit } from "./lib/store-utils";
 import { registerTaskCommand } from "./task";
 import { TaskRunner } from "./task-runner";
 import { checkForUpdates, registerUpgradeCommand } from "./upgrade";
