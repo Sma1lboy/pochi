@@ -33,23 +33,13 @@ import { createStore } from "./livekit/store";
 import { registerMcpCommand } from "./mcp";
 import { registerModelCommand } from "./model";
 import { OutputRenderer } from "./output-renderer";
-import { safeShutdownStore } from "./lib/shutdown";
+import { shutdownStoreAndExit } from "./lib/store-utils";
 import { registerTaskCommand } from "./task";
 import { TaskRunner } from "./task-runner";
 import { checkForUpdates, registerUpgradeCommand } from "./upgrade";
 
 const logger = getLogger("Pochi");
 logger.debug(`pochi v${packageJson.version}`);
-
-process.once("SIGINT", () => {
-  logger.debug("Received SIGINT, exiting...");
-  process.exit(130);
-});
-
-process.once("SIGTERM", () => {
-  logger.debug("Received SIGTERM, exiting...");
-  process.exit(1);
-});
 
 const parsePositiveInt = (input: string): number => {
   if (!input) {
@@ -138,9 +128,7 @@ const program = new Command()
     }
 
     renderer.shutdown();
-    await safeShutdownStore(store);
-
-    process.exit(0);
+    await shutdownStoreAndExit(store);
   });
 
 const otherOptionsGroup = "Others:";
