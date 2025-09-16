@@ -245,30 +245,31 @@ prepare_feature_branch() {
 
 # Add test configuration to current branch
 add_test_configuration() {
-    log "Adding test configuration to current branch: $FEATURE_BRANCH"
+    log "Ensuring test configuration exists for current branch: $FEATURE_BRANCH"
 
-    # Create the test workflow
+    # Create the test workflow (this will overwrite existing one if needed)
     create_test_workflow
 
-    # Commit changes to current branch (if there are any)
-    if ! git diff-index --quiet HEAD --; then
-        git add "$GIT_ROOT/.github/"
+    # Always commit if there are changes, but don't fail if there aren't any
+    git add "$GIT_ROOT/.github/" 2>/dev/null || true
+    if git diff-index --quiet HEAD -- 2>/dev/null; then
+        log "Test configuration already up to date"
+    else
+        log "Updating test configuration..."
         git commit -m "feat: add GitHub Action test configuration
 
 - Add test workflow for PR testing
 - Configure action to test current branch: $FEATURE_BRANCH
 - Enable development mode with verbose logging
 
-Test with: /pochi-test $TEST_PROMPT"
+Test with: /pochi-test $TEST_PROMPT" || true
 
         # Push current branch
-        git push "$FORK_REMOTE" "$FEATURE_BRANCH" --no-verify
-        log "Test configuration added to current branch"
-    else
-        log "Test configuration already exists, skipping commit"
+        git push "$FORK_REMOTE" "$FEATURE_BRANCH" --no-verify || true
+        log "Test configuration updated"
     fi
 
-    log "Test configuration setup completed"
+    log "Test configuration ready"
 }
 
 # Create test workflow
