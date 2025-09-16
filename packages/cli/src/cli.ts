@@ -33,10 +33,10 @@ import { createStore } from "./livekit/store";
 import { registerMcpCommand } from "./mcp";
 import { registerModelCommand } from "./model";
 import { OutputRenderer } from "./output-renderer";
+import { safeShutdownStore } from "./shutdown";
 import { registerTaskCommand } from "./task";
 import { TaskRunner } from "./task-runner";
 import { checkForUpdates, registerUpgradeCommand } from "./upgrade";
-import { safeShutdownStore } from "./shutdown";
 
 const logger = getLogger("Pochi");
 logger.debug(`pochi v${packageJson.version}`);

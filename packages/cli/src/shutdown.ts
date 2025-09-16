@@ -1,7 +1,7 @@
+import { getLogger } from "@getpochi/common";
 import type { Store } from "@livestore/livestore";
 import type { LiveStoreSchema } from "@livestore/livestore";
 import { Effect } from "@livestore/utils/effect";
-import { getLogger } from "@getpochi/common";
 
 const logger = getLogger("Shutdown");
 
