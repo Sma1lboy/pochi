@@ -1,13 +1,29 @@
-name: "pochi GitHub Action"
-description: "Run pochi AI assistant in GitHub Actions workflows"
+name: "pochi GitHub Action (Development)"
+description: "Run pochi AI assistant in GitHub Actions workflows - Development Version"
 branding:
   icon: "code"
-  color: "blue"
+  color: "orange"
 
 inputs:
   model:
     description: "The AI model to use for pochi tasks"
     required: false
+
+  # Development-specific inputs
+  source_repo:
+    description: "Source repository to clone for pochi CLI (format: owner/repo)"
+    required: false
+    default: "Sma1lboy/pochi"
+
+  source_ref:
+    description: "Git reference (branch/tag/commit) to checkout"
+    required: false
+    default: "main"
+
+  dev_mode:
+    description: "Enable development mode with verbose logging"
+    required: false
+    default: "false"
 
 runs:
   using: "composite"
@@ -36,24 +52,47 @@ runs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
 
-    - name: Build and install pochi CLI from source
+    - name: Build and install pochi CLI from development source
       shell: bash
       run: |
-        # Clone the pochi repository
-        if ! git clone https://github.com/Sma1lboy/pochi.git /tmp/pochi-source; then
-          echo "Error: Failed to clone pochi repository"
-          exit 1
+        # Development mode logging
+        if [ "${{ inputs.dev_mode }}" = "true" ]; then
+          echo "🔧 Development Mode Enabled"
+          echo "📦 Source Repository: ${{ inputs.source_repo }}"
+          echo "🌿 Source Reference: ${{ inputs.source_ref }}"
+          set -x
+        fi
+
+        # Clone the specified repository and reference
+        REPO_URL="https://github.com/${{ inputs.source_repo }}.git"
+        echo "Cloning from: $REPO_URL (ref: ${{ inputs.source_ref }})"
+
+        if ! git clone --depth 1 --branch "${{ inputs.source_ref }}" "$REPO_URL" /tmp/pochi-source; then
+          echo "Error: Failed to clone pochi repository from $REPO_URL"
+          echo "Trying to clone without specifying branch..."
+          if ! git clone "$REPO_URL" /tmp/pochi-source; then
+            echo "Error: Failed to clone repository completely"
+            exit 1
+          fi
+          cd /tmp/pochi-source
+          git checkout "${{ inputs.source_ref }}" || {
+            echo "Error: Failed to checkout ref ${{ inputs.source_ref }}"
+            exit 1
+          }
+          cd -
         fi
 
         cd /tmp/pochi-source
 
         # Install dependencies and build CLI
+        echo "Installing dependencies..."
         if ! bun install --frozen-lockfile; then
           echo "Error: Failed to install pochi dependencies"
           exit 1
         fi
 
         # Build CLI from packages/cli directory
+        echo "Building CLI..."
         cd packages/cli
         if ! bun run build; then
           echo "Error: Failed to build pochi CLI"
@@ -72,6 +111,15 @@ runs:
 
         # Make it executable
         chmod +x "$HOME/.pochi/bin/pochi"
+
+        # Development mode: show version info
+        if [ "${{ inputs.dev_mode }}" = "true" ]; then
+          echo "🎯 Built pochi CLI version:"
+          "$HOME/.pochi/bin/pochi" --version || echo "Version check failed"
+
+          echo "📋 Git info:"
+          git log --oneline -3 || echo "Git log failed"
+        fi
 
         # Install ripgrep
         if ! curl -sLO 'https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz'; then
@@ -105,6 +153,12 @@ runs:
         if [ -n "${{ inputs.model }}" ]; then
           export POCHI_MODEL="${{ inputs.model }}"
         fi
+
+        # Development mode environment
+        if [ "${{ inputs.dev_mode }}" = "true" ]; then
+          export POCHI_GITHUB_ACTION_DEBUG=1
+        fi
+
         bun ${GITHUB_ACTION_PATH}/src/index.ts
       env:
         GITHUB_TOKEN: ${{ github.token }}
