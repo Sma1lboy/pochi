@@ -36,14 +36,44 @@ runs:
       env:
         GITHUB_TOKEN: ${{ github.token }}
 
-    - name: Install pochi CLI
+    - name: Build and install pochi CLI from source
       shell: bash
       run: |
-        if ! curl -fsSL https://app.getpochi.com/install.sh | bash > /dev/null 2>&1; then
-          echo "Error: Failed to install pochi CLI"
+        # Clone the pochi repository
+        if ! git clone https://github.com/Sma1lboy/pochi.git /tmp/pochi-source; then
+          echo "Error: Failed to clone pochi repository"
           exit 1
         fi
 
+        cd /tmp/pochi-source
+
+        # Install dependencies and build CLI
+        if ! bun install --frozen-lockfile; then
+          echo "Error: Failed to install pochi dependencies"
+          exit 1
+        fi
+
+        # Build CLI from packages/cli directory
+        cd packages/cli
+        if ! bun run build; then
+          echo "Error: Failed to build pochi CLI"
+          exit 1
+        fi
+        cd ../..
+
+        # Create pochi bin directory
+        mkdir -p "$HOME/.pochi/bin"
+
+        # Copy the built CLI binary
+        if ! cp packages/cli/dist/pochi "$HOME/.pochi/bin/pochi"; then
+          echo "Error: Failed to copy pochi binary"
+          exit 1
+        fi
+
+        # Make it executable
+        chmod +x "$HOME/.pochi/bin/pochi"
+
+        # Install ripgrep
         if ! curl -sLO 'https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz'; then
           echo "Error: Failed to download ripgrep"
           exit 1
@@ -57,6 +87,9 @@ runs:
           exit 1
         fi
         rm -rf ripgrep-14.1.1-x86_64-unknown-linux-musl*
+
+        # Clean up source directory
+        rm -rf /tmp/pochi-source
 
         echo "$HOME/.pochi/bin" >> $GITHUB_PATH
 
