@@ -18,7 +18,7 @@ export async function safeShutdownStore(
     (error) => {
       logger.debug("Store shutdown failed:", error);
       return false;
-    }
+    },
   );
 
   const timeoutPromise = new Promise<false>((resolve) => {
