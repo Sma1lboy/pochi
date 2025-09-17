@@ -12,7 +12,7 @@ export async function shutdownStoreAndExit(
     await Promise.race([
       Effect.runPromise(store.shutdown()),
       new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("timeout")), 5000)
+        setTimeout(() => reject(new Error("timeout")), 5000),
       ),
     ]);
     logger.debug("Store shutdown completed");
