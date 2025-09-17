@@ -9,13 +9,15 @@ export async function shutdownStoreAndExit(
   store: Store<LiveStoreSchema>,
 ): Promise<void> {
   await Promise.race([
-    Effect.runPromise(store.shutdown()).then(() => {
-      logger.debug("Store shutdown completed");
-      process.exit(0);
-    }).catch(() => {
-      logger.debug("Store shutdown failed, continuing...");
-      process.exit(1);
-    }),
+    Effect.runPromise(store.shutdown())
+      .then(() => {
+        logger.debug("Store shutdown completed");
+        process.exit(0);
+      })
+      .catch(() => {
+        logger.debug("Store shutdown failed, continuing...");
+        process.exit(1);
+      }),
     new Promise<void>(() =>
       setTimeout(() => {
         logger.debug("Store shutdown timed out, continuing...");
