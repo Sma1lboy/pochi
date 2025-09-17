@@ -12,52 +12,34 @@ inputs:
 runs:
   using: "composite"
   steps:
+    - name: Clone Pochi repository
+      shell: bash
+      run: |
+        git clone --depth 1 https://github.com/Sma1lboy/pochi /tmp/pochi-source
+
     - name: Install bun
       shell: bash
       run: |
-        if ! curl -fsSL https://bun.com/install | bash > /dev/null 2>&1; then
-          echo "Error: Failed to install bun"
-          exit 1
-        fi
+        curl -fsSL https://bun.com/install | bash
         echo "$HOME/.bun/bin" >> $GITHUB_PATH
 
-    - name: Install dependencies
+    - name: Build Pochi CLI
       shell: bash
       run: |
-        cd ${GITHUB_ACTION_PATH}
-        if ! bun install --frozen-lockfile --silent; then
-          echo "Error: Failed to install dependencies"
-          exit 1
-        fi
+        cd /tmp/pochi-source
+        bun install --frozen-lockfile
+        cd packages/cli
+        bun run build
+        chmod +x ./dist/pochi
 
-    - name: Setup initial reaction and progress comment
-      shell: bash
-      run: bun ${GITHUB_ACTION_PATH}/src/preprocess-action.ts
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-
-    - name: Install pochi CLI
+    - name: Install ripgrep
       shell: bash
       run: |
-        if ! curl -fsSL https://app.getpochi.com/install.sh | bash > /dev/null 2>&1; then
-          echo "Error: Failed to install pochi CLI"
-          exit 1
-        fi
-
-        if ! curl -sLO 'https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz'; then
-          echo "Error: Failed to download ripgrep"
-          exit 1
-        fi
-        if ! tar -xzf ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz > /dev/null 2>&1; then
-          echo "Error: Failed to extract ripgrep"
-          exit 1
-        fi
-        if ! mv ripgrep-14.1.1-x86_64-unknown-linux-musl/rg "$HOME/.pochi/bin/"; then
-          echo "Error: Failed to move ripgrep binary"
-          exit 1
-        fi
+        curl -sLO 'https://github.com/BurntSushi/ripgrep/releases/download/14.1.1/ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz'
+        tar -xzf ripgrep-14.1.1-x86_64-unknown-linux-musl.tar.gz
+        mkdir -p "$HOME/.pochi/bin"
+        mv ripgrep-14.1.1-x86_64-unknown-linux-musl/rg "$HOME/.pochi/bin/"
         rm -rf ripgrep-14.1.1-x86_64-unknown-linux-musl*
-
         echo "$HOME/.pochi/bin" >> $GITHUB_PATH
 
     - name: Config Git
@@ -66,13 +48,24 @@ runs:
         git config --global user.email "noreply@getpochi.com"
         git config --global user.name "Pochi"
 
-    - name: Run pochi GitHub Action
+    - name: Setup initial reaction and progress comment
       shell: bash
       run: |
+        cd /tmp/pochi-source/packages/github-action
+        bun install --frozen-lockfile
+        bun src/preprocess-action.ts
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Run Pochi GitHub Action
+      shell: bash
+      run: |
+        cd /tmp/pochi-source/packages/github-action
         if [ -n "${{ inputs.model }}" ]; then
           export POCHI_MODEL="${{ inputs.model }}"
         fi
-        bun ${GITHUB_ACTION_PATH}/src/index.ts
+        export POCHI_CLI_PATH="/tmp/pochi-source/packages/cli/dist/pochi"
+        bun src/index.ts
       env:
         GITHUB_TOKEN: ${{ github.token }}
         POCHI_REMOTE_ENV: 1
